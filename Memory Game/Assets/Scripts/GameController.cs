@@ -32,6 +32,8 @@ public class GameController : MonoBehaviour
         GetButtons();
         AddGameImages();
         AddListeners();
+        Shuffle(gameImages);
+        gameGuesses = gameImages.Count / 2;
     }
 
     void GetButtons()
@@ -87,16 +89,60 @@ public class GameController : MonoBehaviour
             secondGuess = true;
             secondGuessIndex = int.Parse(UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject.name);
             secondGuessImage = gameImages[secondGuessIndex].name;
-            btns[secondGuessIndex].image.sprite = gameImages[secondGuessIndex];
-            
-            if(firstGuessImage == secondGuessImage)
-            {
-                Debug.Log("The images match");
-            }
-            else
-            {
-                Debug.Log("The images don't match");
-            }
+            btns[secondGuessIndex].image.sprite = gameImages[secondGuessIndex];  
+            countGuesses++;
+            StartCoroutine(CheckIfTheImagesMatch());
         }
     } 
+
+    IEnumerator CheckIfTheImagesMatch()
+    {
+        yield return new WaitForSeconds (1f);
+
+        if(firstGuessImage == secondGuessImage)
+        {
+            yield return new WaitForSeconds (.5f);
+
+            btns[firstGuessIndex].interactable = false;
+            btns[secondGuessIndex].interactable = false;
+
+            btns[firstGuessIndex].image.color = new Color (0, 0, 0, 0);
+            btns[secondGuessIndex].image.color = new Color (0, 0, 0, 0);
+
+            CheckIfTheGameIsFinished();
+        }
+        else
+        {
+            yield return new WaitForSeconds (.5f);
+
+            btns[firstGuessIndex].image.sprite = bgImage;
+            btns[secondGuessIndex].image.sprite = bgImage;
+        }
+        yield return new WaitForSeconds (.5f);
+
+        firstGuess = secondGuess = false;
+    }
+
+    void CheckIfTheGameIsFinished()
+    {
+        countCorrectGuesses++;
+
+        if(countCorrectGuesses == gameGuesses)
+        {
+            Debug.Log("You finished the game.");
+            Debug.Log("It took you " + countGuesses + " guesses to finish the game.");
+        }
+    }
+
+    void Shuffle(List<Sprite> list)
+    {
+        for(int i = 0; i < list.Count; i++)
+        {
+            Sprite temp = list[i];
+            int randomIndex = Random.Range(i, list.Count);
+            list[i] = list[randomIndex];
+            list[randomIndex] = temp;
+            // randomizing the places of the images using an index and a temp variable
+        }
+    }
 }
